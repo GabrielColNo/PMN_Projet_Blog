@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}{{ article.title }} - PMN Blog{% endblock %}
+
+{% block content %}
+  <article class="article-detail">
+    <header>
+      <h2>{{ article.title }}</h2>
+      <p class="article-meta">
+        Published on {{ article.created_at.strftime('%Y-%m-%d') if article.created_at else 'N/A' }}
+      </p>
+    </header>
+
+    <div class="article-body">
+      {{ article.content | safe }}
+    </div>
+
+    <section id="article-actions"
+             class="article-actions"
+             data-like-url="{{ url_for('main.api_like_article', article_id=article.id) }}"
+             data-dislike-url="{{ url_for('main.api_dislike_article', article_id=article.id) }}"
+             data-comments-url="{{ url_for('main.api_add_comment', article_id=article.id) }}">
+      <button type="button" id="like-btn" class="btn">
+        👍 Like (<span id="like-count">{{ article.likes or 0 }}</span>)
+      </button>
+      <button type="button" id="dislike-btn" class="btn btn-secondary">
+        👎 Dislike (<span id="dislike-count">{{ article.dislikes or 0 }}</span>)
+      </button>
+    </section>
+  </article>
+
+  <section class="comments">
+    <h3>Comments</h3>
+
+    <ul id="comments-list" class="comment-list">
+      {% for comment in comments %}
+        <li class="comment-item">
+          <p class="comment-meta">
+            <strong>{{ comment.author_name or 'Anonymous' }}</strong>
+            &bull;
+            {{ comment.created_at.strftime('%Y-%m-%d %H:%M') if comment.created_at else '' }}
+          </p>
+          <p class="comment-body">{{ comment.body }}</p>
+        </li>
+      {% else %}
+        <li class="comment-empty">No comments yet. Be the first to comment!</li>
+      {% endfor %}
+    </ul>
+
+    <form id="comment-form" class="comment-form">
+      <div class="form-row">
+        <label for="author_name">Name (optional)</label>
+        <input type="text" id="author_name" name="author_name" placeholder="Your name" />
+      </div>
+      <div class="form-row">
+        <label for="body">Comment</label>
+        <textarea id="body" name="body" rows="3" required></textarea>
+      </div>
+      <button type="submit" class="btn">Post comment</button>
+      <p class="form-help">Comments are sent via the JSON API, no page reload.</p>
+      <p id="comment-error" class="error-message" hidden></p>
+    </form>
+  </section>
+{% endblock %}

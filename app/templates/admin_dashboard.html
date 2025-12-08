@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Admin dashboard - PMN Blog{% endblock %}
+
+{% block content %}
+  <section class="admin-header">
+    <h2>Admin dashboard</h2>
+    <p>
+      <a href="{{ url_for('admin.create_article') }}" class="btn">+ New article</a>
+      <a href="{{ url_for('admin.logout') }}" class="btn btn-secondary">Log out</a>
+    </p>
+  </section>
+
+  <section class="admin-table">
+    {% if articles %}
+      <table>
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Slug</th>
+            <th>Created</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for article in articles %}
+            <tr>
+              <td>{{ article.title }}</td>
+              <td>{{ article.slug }}</td>
+              <td>{{ article.created_at.strftime('%Y-%m-%d') if article.created_at else '' }}</td>
+              <td>
+                <a href="{{ url_for('main.article_detail', slug=article.slug) }}" class="btn-link">View</a>
+                <a href="{{ url_for('admin.edit_article', article_id=article.id) }}" class="btn-link">Edit</a>
+                <form method="post" action="{{ url_for('admin.delete_article', article_id=article.id) }}" style="display:inline" onsubmit="return confirm('Delete this article?');">
+                  <button type="submit" class="btn-link btn-danger">Delete</button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p>No articles yet. Use the "New article" button to create one.</p>
+    {% endif %}
+  </section>
+{% endblock %}

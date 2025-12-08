@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}PMN Blog - Home{% endblock %}
+
+{% block content %}
+  <section class="hero">
+    <h2>Welcome to the PMN Blog</h2>
+    <p>This is a simple blog example built with Flask, SQLite and a basic HTML/CSS frontend.</p>
+  </section>
+
+  <section class="article-list">
+    <h3>Latest articles</h3>
+
+    {% if articles %}
+      <ul class="article-cards">
+        {% for article in articles %}
+          <li class="article-card">
+            <h4>
+              <a href="{{ url_for('main.article_detail', slug=article.slug) }}">
+                {{ article.title }}
+              </a>
+            </h4>
+            <p class="article-meta">
+              Published on {{ article.created_at.strftime('%Y-%m-%d') if article.created_at else 'N/A' }}
+            </p>
+            <p class="article-excerpt">
+              {{ article.content[:200] }}{% if article.content|length > 200 %}...{% endif %}
+            </p>
+            <p class="article-stats">
+              👍 {{ article.likes or 0 }} &nbsp;|&nbsp; 👎 {{ article.dislikes or 0 }}
+            </p>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>No articles yet. Log in to the <a href="{{ url_for('admin.dashboard') }}">admin area</a> and create your first article.</p>
+    {% endif %}
+  </section>
+{% endblock %}
