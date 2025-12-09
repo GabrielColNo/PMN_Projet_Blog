@@ -1,37 +1,41 @@
 {% extends "base.html" %}
 
-{% block title %}Contact - PMN Blog{% endblock %}
+{% block title %}Contactez nous - Presspedia{% endblock %}
 
 {% block content %}
-  <section class="hero">
-    <h2>Contact</h2>
-    <p>
-      This is a simple contact page. You can customize the email address, text and
-      form fields as you like.
-    </p>
+  <section class="page-hero">
+    <div class="container">
+      <h1 class="page-title">Contactez nous</h1>
+    </div>
   </section>
 
-  <section class="article-card">
-    <h3>Get in touch</h3>
-    <p>
-      You can replace the email below with your own:
-    </p>
-    <p><strong>Email:</strong> example@example.com</p>
+  <section class="contact-content">
+    <div class="container">
+      <div class="content-box">
+        <p class="intro-text">
+          Une question ? Une collaboration ? Une idée d'article ?<br>
+          Nous serons ravis d'échanger avec vous.
+        </p>
 
-    <form class="simple-form" method="get" action="#">
-      <div class="form-row">
-        <label for="name">Name</label>
-        <input type="text" id="name" name="name" />
+        <div class="contact-info">
+          <p class="contact-item">
+            <span class="contact-icon">✉️</span>
+            <strong>Email :</strong> contact@writely.com
+          </p>
+          <p class="contact-item">
+            <span class="contact-icon">📷</span>
+            <strong>Instagram :</strong> @writely
+          </p>
+          <p class="contact-item">
+            <span class="contact-icon">🌍</span>
+            <strong>Localisation :</strong> Disponible partout dans le monde (online)
+          </p>
+        </div>
+
+        <p class="closing-text">
+          N'hésitez pas à nous écrire — nous répondons dès que possible.
+        </p>
       </div>
-      <div class="form-row">
-        <label for="message">Message</label>
-        <textarea id="message" name="message" rows="4"></textarea>
-      </div>
-      <button type="submit" class="btn">Send (demo only)</button>
-      <p class="form-help">
-        This form is only visual for now; you can add real handling with Flask or
-        an email service later.
-      </p>
-    </form>
+    </div>
   </section>
 {% endblock %}

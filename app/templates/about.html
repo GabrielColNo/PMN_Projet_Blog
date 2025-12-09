@@ -1,21 +1,24 @@
 {% extends "base.html" %}
 
-{% block title %}About us - PMN Blog{% endblock %}
+{% block title %}Qui sommes-nous? - Presspedia{% endblock %}
 
 {% block content %}
-  <section class="hero">
-    <h2>About this project</h2>
-    <p>
-      This blog was created as a PMN school project to practice building a full web
-      application with Python (Flask), HTML and CSS.
-    </p>
+  <section class="page-hero">
+    <div class="container">
+      <h1 class="page-title">Qui sommes nous?</h1>
+    </div>
   </section>
 
-  <section class="article-card">
-    <h3>Who we are</h3>
-    <p>
-      Replace this text with information about you, your team or your school.
-      The goal of this page is just to provide a basic structure you can edit later.
-    </p>
+  <section class="about-content">
+    <div class="container">
+      <div class="content-box">
+        <p class="large-text">
+          Presspedia est né du constat que la presse traditionnelle ne représente plus ni les journalistes ni les citoyens. Nous offrons une solution innovante pour que chaque jeune journaliste indépendant puisse publier ses articles et toucher un public engagé.
+        </p>
+        <p class="large-text">
+          Notre objectif est de créer un espace libre, authentique et collaboratif, où le journalisme retrouve sa valeur : informer, inspirer et donner la parole à ceux qui veulent se faire entendre.
+        </p>
+      </div>
+    </div>
   </section>
 {% endblock %}

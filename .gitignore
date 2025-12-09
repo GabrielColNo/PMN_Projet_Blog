@@ -1,2 +1,5 @@
 .DS_Store
-.DS_Store
+instance/
+__pycache__/
+*.pyc
+app/static/uploads/
