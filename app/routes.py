@@ -28,6 +28,20 @@ def article_detail(slug: str):
     return render_template("article_detail.html", article=article, comments=comments)
 
 
+@main_bp.route("/about")
+def about():
+    """Static "About us" page."""
+
+    return render_template("about.html")
+
+
+@main_bp.route("/contact")
+def contact():
+    """Static contact page with a simple form and contact info."""
+
+    return render_template("contact.html")
+
+
 @main_bp.route("/api/articles/<int:article_id>/like", methods=["POST"])
 def api_like_article(article_id: int):
     """Increment like counter for an article and return the new value."""
