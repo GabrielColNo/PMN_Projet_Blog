@@ -29,6 +29,26 @@
           </div>
 
           <div class="form-row">
+            <label for="category">Catégorie</label>
+            <select id="category" name="category">
+              <option value="Général">Général</option>
+              <option value="Politique">Politique</option>
+              <option value="Société">Société</option>
+              <option value="Culture">Culture</option>
+              <option value="Économie">Économie</option>
+              <option value="Sport">Sport</option>
+              <option value="Technologie">Technologie</option>
+              <option value="Environnement">Environnement</option>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <label for="tags">Tags (séparés par des virgules)</label>
+            <input type="text" id="tags" name="tags" placeholder="Ex: journalisme, media, investigation" />
+            <p class="form-help">Ajoutez des mots-clés pour aider les lecteurs à trouver votre article</p>
+          </div>
+
+          <div class="form-row">
             <label for="image">Image de l'article (optionnel)</label>
             <input type="file" id="image" name="image" accept="image/png,image/jpeg,image/jpg,image/gif,image/webp" />
             <p class="form-help">Formats acceptés: PNG, JPG, GIF, WEBP (Max 10MB)</p>

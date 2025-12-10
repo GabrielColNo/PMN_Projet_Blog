@@ -13,6 +13,35 @@
 
   <section class="blog-content">
     <div class="container">
+      <!-- Search and Filters -->
+      <div class="filters-section">
+        <form method="get" action="{{ url_for('main.blog') }}" class="filters-form">
+          <div class="search-box">
+            <input type="text" name="search" placeholder="🔍 Rechercher un article..." value="{{ current_search }}" />
+          </div>
+          
+          <div class="filter-group">
+            <select name="category" onchange="this.form.submit()">
+              <option value="">Toutes les catégories</option>
+              {% for cat in categories %}
+                <option value="{{ cat }}" {% if current_category == cat %}selected{% endif %}>{{ cat }}</option>
+              {% endfor %}
+            </select>
+            
+            <select name="author" onchange="this.form.submit()">
+              <option value="">Tous les auteurs</option>
+              {% for auth in authors %}
+                <option value="{{ auth }}" {% if current_author == auth %}selected{% endif %}>{{ auth }}</option>
+              {% endfor %}
+            </select>
+            
+            <button type="submit" class="btn-filter">Filtrer</button>
+            {% if current_search or current_category or current_author %}
+              <a href="{{ url_for('main.blog') }}" class="btn-clear">✖ Effacer</a>
+            {% endif %}
+          </div>
+        </form>
+      </div>
       {% if articles %}
         <div class="article-grid">
           {% for article in articles %}
@@ -28,18 +57,29 @@
                 </a>
               </h3>
               <p class="article-meta">
-                Par {{ article.author or 'Anonyme' }} • {{ article.created_at.strftime('%d/%m/%Y') if article.created_at else 'N/A' }}
+                <a href="{{ url_for('main.blog', author=article.author) }}" class="author-link">{{ article.author or 'Anonyme' }}</a>
+                • {{ article.created_at.strftime('%d/%m/%Y') if article.created_at else 'N/A' }}
+                {% if article.category %}
+                  • <span class="category-badge">{{ article.category }}</span>
+                {% endif %}
               </p>
+              {% if article.tags %}
+                <div class="tags">
+                  {% for tag in article.tags.split(',') %}
+                    <span class="tag">#{{ tag.strip() }}</span>
+                  {% endfor %}
+                </div>
+              {% endif %}
               <p class="article-excerpt">
                 {{ article.content[:150] }}{% if article.content|length > 150 %}...{% endif %}
               </p>
               <div class="article-stats">
                 <span class="stat-item">
-                  <img src="{{ url_for('static', filename='lovee.png') }}" alt="Likes" class="stat-icon" />
+                  <img src="{{ url_for('static', filename='lovee.png') }}" alt="J'aime" class="stat-icon" />
                   {{ article.likes or 0 }}
                 </span>
                 <span class="stat-item">
-                  <img src="{{ url_for('static', filename='dislikee.png') }}" alt="Dislikes" class="stat-icon" />
+                  <img src="{{ url_for('static', filename='dislikee.png') }}" alt="Je n'aime pas" class="stat-icon" />
                   {{ article.dislikes or 0 }}
                 </span>
                 <span class="stat-item">

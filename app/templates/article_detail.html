@@ -7,10 +7,22 @@
     <article class="article-detail">
       <header class="article-header">
         <h1 class="article-title">{{ article.title }}</h1>
-        <p class="article-author">Par {{ article.author or 'Anonyme' }}</p>
+        <p class="article-author">
+          Par <a href="{{ url_for('main.blog', author=article.author) }}" class="author-link">{{ article.author or 'Anonyme' }}</a>
+        </p>
         <p class="article-meta">
           Publié le {{ article.created_at.strftime('%d/%m/%Y') if article.created_at else 'N/A' }}
+          {% if article.category %}
+            • <span class="category-badge">{{ article.category }}</span>
+          {% endif %}
         </p>
+        {% if article.tags %}
+          <div class="tags">
+            {% for tag in article.tags.split(',') %}
+              <span class="tag">#{{ tag.strip() }}</span>
+            {% endfor %}
+          </div>
+        {% endif %}
       </header>
 
       {% if article.image_filename %}
@@ -23,17 +35,36 @@
         {{ article.content | safe }}
       </div>
 
+      <!-- Share Buttons -->
+      <div class="share-section">
+        <p class="share-label">Partager cet article :</p>
+        <div class="share-buttons">
+          <button class="share-btn" onclick="shareOnTwitter()">
+            <span>𝕏</span> Twitter
+          </button>
+          <button class="share-btn" onclick="shareOnFacebook()">
+            <span>f</span> Facebook
+          </button>
+          <button class="share-btn" onclick="shareOnLinkedIn()">
+            <span>in</span> LinkedIn
+          </button>
+          <button class="share-btn" onclick="copyLink()">
+            <span>🔗</span> Copier le lien
+          </button>
+        </div>
+      </div>
+
       <section id="article-actions"
                class="article-actions"
                data-like-url="{{ url_for('main.api_like_article', article_id=article.id) }}"
                data-dislike-url="{{ url_for('main.api_dislike_article', article_id=article.id) }}"
                data-comments-url="{{ url_for('main.api_add_comment', article_id=article.id) }}">
         <button type="button" id="like-btn" class="action-btn">
-          <img src="{{ url_for('static', filename='lovee.png') }}" alt="Like" class="action-icon" />
+          <img src="{{ url_for('static', filename='lovee.png') }}" alt="J'aime" class="action-icon" />
           <span id="like-count">{{ article.likes or 0 }}</span>
         </button>
         <button type="button" id="dislike-btn" class="action-btn">
-          <img src="{{ url_for('static', filename='dislikee.png') }}" alt="Dislike" class="action-icon" />
+          <img src="{{ url_for('static', filename='dislikee.png') }}" alt="Je n'aime pas" class="action-icon" />
           <span id="dislike-count">{{ article.dislikes or 0 }}</span>
         </button>
         <button type="button" class="action-btn" onclick="document.getElementById('comment-form').scrollIntoView({behavior: 'smooth'})">

@@ -9,6 +9,8 @@ class Article(db.Model):
     slug = db.Column(db.String(255), unique=True, nullable=False)
     content = db.Column(db.Text, nullable=False)
     author = db.Column(db.String(100), default="Anonyme")
+    category = db.Column(db.String(50), default="Général")
+    tags = db.Column(db.String(255), default="")
     image_filename = db.Column(db.String(255), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

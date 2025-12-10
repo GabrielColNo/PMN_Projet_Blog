@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, redirect, render_template, request, url_for
 from slugify import slugify as create_slug
 from werkzeug.utils import secure_filename
+from sqlalchemy import or_
 import os
 
 from . import db
@@ -27,8 +28,38 @@ def index():
 def blog():
     """Blog page with all articles and form to write new ones."""
 
-    articles = Article.query.order_by(Article.created_at.desc()).all()
-    return render_template("blog.html", articles=articles)
+    # Get filter parameters
+    search = request.args.get('search', '')
+    category = request.args.get('category', '')
+    author = request.args.get('author', '')
+    
+    # Start with all articles
+    query = Article.query
+    
+    # Apply filters
+    if search:
+        query = query.filter(
+            or_(
+                Article.title.ilike(f'%{search}%'),
+                Article.content.ilike(f'%{search}%')
+            )
+        )
+    if category:
+        query = query.filter_by(category=category)
+    if author:
+        query = query.filter_by(author=author)
+    
+    articles = query.order_by(Article.created_at.desc()).all()
+    
+    # Get unique categories and authors for filters
+    categories = db.session.query(Article.category).distinct().all()
+    categories = [c[0] for c in categories if c[0]]
+    
+    authors = db.session.query(Article.author).distinct().all()
+    authors = [a[0] for a in authors if a[0]]
+    
+    return render_template("blog.html", articles=articles, categories=categories, authors=authors, 
+                         current_search=search, current_category=category, current_author=author)
 
 
 @main_bp.route("/article/<string:slug>")
@@ -65,6 +96,8 @@ def write_article():
     if request.method == "POST":
         title = request.form.get("title", "").strip()
         author = request.form.get("author", "").strip() or "Anonyme"
+        category = request.form.get("category", "").strip() or "Général"
+        tags = request.form.get("tags", "").strip()
         content = request.form.get("content", "").strip()
 
         if not title or not content:
@@ -106,6 +139,8 @@ def write_article():
             slug=slug, 
             content=content, 
             author=author,
+            category=category,
+            tags=tags,
             image_filename=image_filename
         )
         db.session.add(article)
@@ -126,12 +161,32 @@ def api_like_article(article_id: int):
     return jsonify({"likes": article.likes})
 
 
+@main_bp.route("/api/articles/<int:article_id>/unlike", methods=["POST"])
+def api_unlike_article(article_id: int):
+    """Decrement like counter for an article and return the new value."""
+
+    article = Article.query.get_or_404(article_id)
+    article.likes = max((article.likes or 0) - 1, 0)
+    db.session.commit()
+    return jsonify({"likes": article.likes})
+
+
 @main_bp.route("/api/articles/<int:article_id>/dislike", methods=["POST"])
 def api_dislike_article(article_id: int):
     """Increment dislike counter for an article and return the new value."""
 
     article = Article.query.get_or_404(article_id)
     article.dislikes = (article.dislikes or 0) + 1
+    db.session.commit()
+    return jsonify({"dislikes": article.dislikes})
+
+
+@main_bp.route("/api/articles/<int:article_id>/undislike", methods=["POST"])
+def api_undislike_article(article_id: int):
+    """Decrement dislike counter for an article and return the new value."""
+
+    article = Article.query.get_or_404(article_id)
+    article.dislikes = max((article.dislikes or 0) - 1, 0)
     db.session.commit()
     return jsonify({"dislikes": article.dislikes})
 
