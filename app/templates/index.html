@@ -1,39 +1,86 @@
 {% extends "base.html" %}
 
-{% block title %}PMN Blog - Home{% endblock %}
+{% block title %}Presspedia - Accueil{% endblock %}
 
 {% block content %}
-  <section class="hero">
-    <h2>Welcome to the PMN Blog</h2>
-    <p>This is a simple blog example built with Flask, SQLite and a basic HTML/CSS frontend.</p>
+  <section class="hero-home">
+    <div class="hero-content">
+      <div class="hero-text">
+        <h1 class="hero-title">Bienvenue sur Presspedia</h1>
+        <p class="hero-subtitle">La première bibliothèque journalistique française participative, où les jeunes journalistes indépendants prennent la parole.</p>
+        <a href="#blog" class="btn-explore">Explorer le blog</a>
+      </div>
+      <div class="hero-image">
+        <img src="{{ url_for('static', filename='megaphone.png') }}" alt="Megaphone" />
+        <div class="floating-icon icon-1">
+          <img src="{{ url_for('static', filename='lovee.png') }}" alt="Like" />
+        </div>
+        <div class="floating-icon icon-2">
+          <img src="{{ url_for('static', filename='dislikee.png') }}" alt="Dislike" />
+        </div>
+        <div class="floating-icon icon-3">💬</div>
+        <div class="floating-icon icon-4">💭</div>
+      </div>
+    </div>
   </section>
 
-  <section class="article-list">
-    <h3>Latest articles</h3>
+  <section id="blog" class="article-list">
+    <div class="container">
+      <h2 class="section-title">Articles récents</h2>
 
-    {% if articles %}
-      <ul class="article-cards">
-        {% for article in articles %}
-          <li class="article-card">
-            <h4>
-              <a href="{{ url_for('main.article_detail', slug=article.slug) }}">
-                {{ article.title }}
-              </a>
-            </h4>
-            <p class="article-meta">
-              Published on {{ article.created_at.strftime('%Y-%m-%d') if article.created_at else 'N/A' }}
-            </p>
-            <p class="article-excerpt">
-              {{ article.content[:200] }}{% if article.content|length > 200 %}...{% endif %}
-            </p>
-            <p class="article-stats">
-              👍 {{ article.likes or 0 }} &nbsp;|&nbsp; 👎 {{ article.dislikes or 0 }}
-            </p>
-          </li>
-        {% endfor %}
-      </ul>
-    {% else %}
-      <p>No articles yet. Log in to the <a href="{{ url_for('admin.dashboard') }}">admin area</a> and create your first article.</p>
-    {% endif %}
+      {% if articles %}
+        <ul class="article-cards">
+          {% for article in articles %}
+            <li class="article-card">
+              {% if article.image_filename %}
+                <div class="article-card-image">
+                  <img src="{{ url_for('static', filename='uploads/' + article.image_filename) }}" alt="{{ article.title }}" />
+                </div>
+              {% endif %}
+              <h3>
+                <a href="{{ url_for('main.article_detail', slug=article.slug) }}">
+                  {{ article.title }}
+                </a>
+              </h3>
+              <p class="article-meta">
+                <a href="{{ url_for('main.blog', author=article.author) }}" class="author-link">{{ article.author or 'Anonyme' }}</a>
+                • Publié le {{ article.created_at.strftime('%d/%m/%Y') if article.created_at else 'N/A' }}
+                {% if article.category %}
+                  • <span class="category-badge">{{ article.category }}</span>
+                {% endif %}
+              </p>
+              {% if article.tags %}
+                <div class="tags">
+                  {% for tag in article.tags.split(',') %}
+                    <span class="tag">#{{ tag.strip() }}</span>
+                  {% endfor %}
+                </div>
+              {% endif %}
+              <p class="article-excerpt">
+                {{ article.content[:200] }}{% if article.content|length > 200 %}...{% endif %}
+              </p>
+              <div class="article-stats">
+                <span class="stat-item">
+                  <img src="{{ url_for('static', filename='lovee.png') }}" alt="J'aime" class="stat-icon" />
+                  {{ article.likes or 0 }}
+                </span>
+                <span class="stat-item">
+                  <img src="{{ url_for('static', filename='dislikee.png') }}" alt="Je n'aime pas" class="stat-icon" />
+                  {{ article.dislikes or 0 }}
+                </span>
+                <span class="stat-item">
+                  💬 {{ article.comments|length if article.comments else 0 }}
+                </span>
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+        <div class="view-all-container">
+          <a href="{{ url_for('main.blog') }}" class="btn-view-all">Voir tous les articles →</a>
+        </div>
+      {% else %}
+        <p class="no-articles">Aucun article pour le moment. <a href="{{ url_for('main.write_article') }}">Soyez le premier à écrire !</a></p>
+      {% endif %}
+    </div>
   </section>
 {% endblock %}

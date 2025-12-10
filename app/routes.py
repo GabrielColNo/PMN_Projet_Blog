@@ -1,4 +1,8 @@
-from flask import Blueprint, jsonify, render_template, request
+from flask import Blueprint, jsonify, redirect, render_template, request, url_for
+from slugify import slugify as create_slug
+from werkzeug.utils import secure_filename
+from sqlalchemy import or_
+import os
 
 from . import db
 from .models import Article, Comment
@@ -6,13 +10,56 @@ from .models import Article, Comment
 
 main_bp = Blueprint("main", __name__)
 
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 @main_bp.route("/")
 def index():
-    """Main page with presentation text and list of articles."""
+    """Main page with presentation text and list of recent articles."""
 
-    articles = Article.query.order_by(Article.created_at.desc()).all()
+    articles = Article.query.order_by(Article.created_at.desc()).limit(6).all()
     return render_template("index.html", articles=articles)
+
+
+@main_bp.route("/blog")
+def blog():
+    """Blog page with all articles and form to write new ones."""
+
+    # Get filter parameters
+    search = request.args.get('search', '')
+    category = request.args.get('category', '')
+    author = request.args.get('author', '')
+    
+    # Start with all articles
+    query = Article.query
+    
+    # Apply filters
+    if search:
+        query = query.filter(
+            or_(
+                Article.title.ilike(f'%{search}%'),
+                Article.content.ilike(f'%{search}%')
+            )
+        )
+    if category:
+        query = query.filter_by(category=category)
+    if author:
+        query = query.filter_by(author=author)
+    
+    articles = query.order_by(Article.created_at.desc()).all()
+    
+    # Get unique categories and authors for filters
+    categories = db.session.query(Article.category).distinct().all()
+    categories = [c[0] for c in categories if c[0]]
+    
+    authors = db.session.query(Article.author).distinct().all()
+    authors = [a[0] for a in authors if a[0]]
+    
+    return render_template("blog.html", articles=articles, categories=categories, authors=authors, 
+                         current_search=search, current_category=category, current_author=author)
 
 
 @main_bp.route("/article/<string:slug>")
@@ -42,6 +89,68 @@ def contact():
     return render_template("contact.html")
 
 
+@main_bp.route("/blog/write", methods=["GET", "POST"])
+def write_article():
+    """Public form to write and submit a new article."""
+
+    if request.method == "POST":
+        title = request.form.get("title", "").strip()
+        author = request.form.get("author", "").strip() or "Anonyme"
+        category = request.form.get("category", "").strip() or "Général"
+        tags = request.form.get("tags", "").strip()
+        content = request.form.get("content", "").strip()
+
+        if not title or not content:
+            return render_template(
+                "write_article.html",
+                error="Le titre et le contenu sont obligatoires.",
+            )
+
+        # Generate slug from title
+        slug = create_slug(title)
+        # Check if slug exists, if so add a number
+        counter = 1
+        original_slug = slug
+        while Article.query.filter_by(slug=slug).first():
+            slug = f"{original_slug}-{counter}"
+            counter += 1
+
+        # Handle image upload
+        image_filename = None
+        if 'image' in request.files:
+            file = request.files['image']
+            if file and file.filename and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                # Add timestamp to make filename unique
+                import time
+                timestamp = str(int(time.time()))
+                name, ext = os.path.splitext(filename)
+                image_filename = f"{timestamp}_{name}{ext}"
+                
+                # Get the Flask app's root path
+                from flask import current_app
+                upload_folder = os.path.join(current_app.root_path, 'static', 'uploads')
+                os.makedirs(upload_folder, exist_ok=True)
+                
+                file.save(os.path.join(upload_folder, image_filename))
+
+        article = Article(
+            title=title, 
+            slug=slug, 
+            content=content, 
+            author=author,
+            category=category,
+            tags=tags,
+            image_filename=image_filename
+        )
+        db.session.add(article)
+        db.session.commit()
+
+        return redirect(url_for("main.article_detail", slug=article.slug))
+
+    return render_template("write_article.html")
+
+
 @main_bp.route("/api/articles/<int:article_id>/like", methods=["POST"])
 def api_like_article(article_id: int):
     """Increment like counter for an article and return the new value."""
@@ -52,12 +161,32 @@ def api_like_article(article_id: int):
     return jsonify({"likes": article.likes})
 
 
+@main_bp.route("/api/articles/<int:article_id>/unlike", methods=["POST"])
+def api_unlike_article(article_id: int):
+    """Decrement like counter for an article and return the new value."""
+
+    article = Article.query.get_or_404(article_id)
+    article.likes = max((article.likes or 0) - 1, 0)
+    db.session.commit()
+    return jsonify({"likes": article.likes})
+
+
 @main_bp.route("/api/articles/<int:article_id>/dislike", methods=["POST"])
 def api_dislike_article(article_id: int):
     """Increment dislike counter for an article and return the new value."""
 
     article = Article.query.get_or_404(article_id)
     article.dislikes = (article.dislikes or 0) + 1
+    db.session.commit()
+    return jsonify({"dislikes": article.dislikes})
+
+
+@main_bp.route("/api/articles/<int:article_id>/undislike", methods=["POST"])
+def api_undislike_article(article_id: int):
+    """Decrement dislike counter for an article and return the new value."""
+
+    article = Article.query.get_or_404(article_id)
+    article.dislikes = max((article.dislikes or 0) - 1, 0)
     db.session.commit()
     return jsonify({"dislikes": article.dislikes})
 

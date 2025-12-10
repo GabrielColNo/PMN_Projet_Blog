@@ -1,43 +1,48 @@
 <!doctype html>
-<html lang="en">
+<html lang="fr">
   <head>
     <meta charset="utf-8" />
-    <title>{% block title %}PMN Blog{% endblock %}</title>
+    <title>{% block title %}Presspedia{% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
   </head>
   <body>
     <header class="site-header">
       <div class="container header-inner">
-        <h1 class="site-title"><a href="{{ url_for('main.index') }}">PMN Blog</a></h1>
+        <div class="logo">
+          <a href="{{ url_for('main.index') }}">
+            <img src="{{ url_for('static', filename='presspedia.png') }}" alt="Presspedia" />
+          </a>
+        </div>
         <nav class="site-nav">
           <a href="{{ url_for('main.index') }}">Home</a>
-          <a href="{{ url_for('main.about') }}">About</a>
-          <a href="{{ url_for('main.contact') }}">Contact</a>
+          <a href="{{ url_for('main.blog') }}">Blog</a>
+          <a href="{{ url_for('main.about') }}">About us</a>
+          <a href="{{ url_for('main.contact') }}">Contact us</a>
         </nav>
       </div>
     </header>
 
     <main class="site-main">
-      <div class="container">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-          {% if messages %}
-            <div class="flash-container">
-              {% for category, message in messages %}
-                <div class="flash flash-{{ category }}">{{ message }}</div>
-              {% endfor %}
-            </div>
-          {% endif %}
-        {% endwith %}
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="flash-container">
+            {% for category, message in messages %}
+              <div class="flash flash-{{ category }}">{{ message }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
 
-        {% block content %}{% endblock %}
-      </div>
+      {% block content %}{% endblock %}
     </main>
 
     <footer class="site-footer">
-      <div class="container">
-        <small>PMN Blog project &mdash; built with Flask</small>
-      </div>
+      <nav class="footer-nav">
+        <a href="{{ url_for('main.index') }}">Home</a>
+        <a href="{{ url_for('main.about') }}">About us</a>
+        <a href="{{ url_for('main.contact') }}">Contact us</a>
+      </nav>
     </footer>
 
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
